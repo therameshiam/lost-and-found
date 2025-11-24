@@ -6,7 +6,7 @@ import Spinner from './components/Spinner';
 import ActivateForm from './components/ActivateForm';
 import OwnerFound from './components/OwnerFound';
 import LandingPage from './components/LandingPage';
-import { AlertCircle, ServerCrash, RefreshCw } from 'lucide-react';
+import { AlertCircle, ServerCrash, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<TagStatus>(TagStatus.LOADING);
@@ -81,16 +81,22 @@ const App: React.FC = () => {
       const response = await activateTag({ id: tagId, item, phone });
       if (response.result === 'success') {
         setStatus(TagStatus.SUCCESS_ACTIVATED);
-        // Automatically switch to "Found" view after a brief moment or show success message
+        
+        // Construct the link locally so we can show it immediately without re-fetching
+        const message = `Hi, I found your ${item}. How can I return it safely?`;
+        const generatedWaLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        setWaLink(generatedWaLink);
+
+        // Transition to FOUND state automatically to show the user what a finder will see
         setTimeout(() => {
-           window.location.reload();
-        }, 2000);
+           setStatus(TagStatus.FOUND);
+        }, 2500);
       } else {
         alert('Activation failed: ' + (response.message || 'Unknown error'));
         setIsSubmitting(false);
       }
     } catch (e) {
-      alert('Activation failed due to network error.');
+      alert('Activation failed due to network error. Please check your internet.');
       setIsSubmitting(false);
     }
   };
@@ -119,9 +125,13 @@ const App: React.FC = () => {
         return waLink ? <OwnerFound waLink={waLink} /> : null;
       case TagStatus.SUCCESS_ACTIVATED:
         return (
-          <div className="text-center py-10">
-            <div className="text-green-500 text-xl font-bold mb-2">Activation Successful!</div>
-            <p className="text-gray-600">Reloading tag information...</p>
+          <div className="text-center py-10 animate-in fade-in zoom-in duration-300">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+               <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <div className="text-green-600 text-xl font-bold mb-2">Activation Successful!</div>
+            <p className="text-gray-600">Your tag is now active.</p>
+            <p className="text-xs text-gray-400 mt-4">Switching to Finder View...</p>
           </div>
         );
       case TagStatus.ERROR:
@@ -130,6 +140,11 @@ const App: React.FC = () => {
             <AlertCircle className="w-12 h-12 mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">Connection Error</h3>
             <p className="text-sm text-gray-700 mb-6">{errorMessage}</p>
+            <div className="bg-red-50 p-3 rounded-lg text-xs text-left mb-4 border border-red-100">
+               <strong>Troubleshooting:</strong><br/>
+               1. Check your Internet connection.<br/>
+               2. Ensure Google Sheet permissions are set to "Anyone" (Execute as Me).
+            </div>
             <button 
                 onClick={handleRetry}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -162,7 +177,8 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
         <div className="bg-gray-50 px-6 py-4 text-center text-xs text-gray-400 border-t border-gray-100">
-          Powered by Serverless & Google Sheets
+          <p>Powered by Serverless & Google Sheets</p>
+          {tagId && <p className="mt-1 font-mono text-[10px] opacity-50">ID: {tagId}</p>}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Zap, DollarSign, Heart } from 'lucide-react';
+import { ShieldCheck, Zap, DollarSign, Heart, PlayCircle } from 'lucide-react';
 import QrGenerator from './QrGenerator';
 
 const LandingPage: React.FC = () => {
@@ -14,7 +14,18 @@ const LandingPage: React.FC = () => {
           Create free, privacy-focused QR code labels for your valuables. 
           When lost, finders can contact you via WhatsApp without seeing your phone number.
         </p>
-        <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-500">
+        
+        <div className="flex justify-center gap-4">
+          <a href="#studio" className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+            Create Codes
+          </a>
+          <a href="?id=DEMO_TEST" className="px-6 py-3 bg-white text-gray-700 border border-gray-300 font-semibold rounded-lg shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
+            <PlayCircle className="w-5 h-5" />
+            Try Demo
+          </a>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-500 pt-4">
           <div className="flex items-center gap-1">
             <DollarSign className="w-4 h-4" /> Zero Cost
           </div>
