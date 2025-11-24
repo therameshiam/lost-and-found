@@ -32,5 +32,12 @@
 6. Check your Google Sheet to see the data populated.
 
 ## 4. Hosting (GitHub Pages)
-1. Build the React app (`npm run build`).
-2. Deploy the `build` or `dist` folder to GitHub Pages.
+1. **IMPORTANT**: Ensure `vite.config.ts` has the correct `base` path set to your repository name (e.g., `/lost-and-found/`).
+2. Build the React app (`npm run build`).
+3. Deploy the `dist` folder to GitHub Pages.
+
+### Troubleshooting: Blank Screen
+If you see a blank screen on your phone:
+1. **Check URL**: Ensure you are visiting `https://username.github.io/lost-and-found/`.
+2. **Check Base Path**: Open `vite.config.ts` and verify `base: '/lost-and-found/'` matches your repo name.
+3. **Rebuild**: You must run `npm run build` and push the new artifacts after changing the config.

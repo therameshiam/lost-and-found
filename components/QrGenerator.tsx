@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Printer, Settings, Download, Link as LinkIcon, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Printer, Settings, Download, Link as LinkIcon, AlertTriangle, ExternalLink, RefreshCw, Globe } from 'lucide-react';
 // @ts-ignore
 import QRCode from 'qrcode';
 
@@ -9,18 +9,18 @@ interface QrTag {
   dataUrl: string;
 }
 
+// Your production URL - This is what users will scan
+const DEPLOYED_URL = 'https://therameshiam.github.io/lost-and-found/';
+
 const QrGenerator: React.FC = () => {
   const [prefix, setPrefix] = useState('ITEM_');
   const [startNum, setStartNum] = useState(1);
   const [count, setCount] = useState(6);
   const [color, setColor] = useState('#000000');
   
-  // Initialize with the current window URL (stripped of params)
+  // Initialize URL: Always prefer the Production URL unless the user explicitly overrides it
   const [baseUrl, setBaseUrl] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.href.split('?')[0];
-    }
-    return '';
+    return DEPLOYED_URL;
   });
   
   const [tags, setTags] = useState<QrTag[]>([]);
@@ -34,6 +34,10 @@ const QrGenerator: React.FC = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleUseProductionUrl = () => {
+    setBaseUrl(DEPLOYED_URL);
   };
 
   // Robust URL cleaner
@@ -53,12 +57,16 @@ const QrGenerator: React.FC = () => {
   // Check for private URLs
   useEffect(() => {
     const lower = baseUrl.toLowerCase();
-    if (lower.includes('localhost') || lower.includes('127.0.0.1') || lower.endsWith('.local')) {
-      setWarning('You are using a local URL. These QR codes will NOT work on your phone unless your computer and phone are on the same WiFi and you use the IP address.');
-    } else if (lower.includes('webcontainer') || lower.includes('stackblitz') || lower.includes('codesandbox')) {
-      setWarning('You are using a Preview URL. This might be private. Ensure this URL is publicly accessible before printing.');
+    const clean = getCleanUrl(baseUrl);
+
+    // Warn if the USER explicitly types a localhost address
+    if (lower.includes('localhost') || lower.includes('127.0.0.1') || lower.endsWith('.local') || lower.includes('webcontainer')) {
+      setWarning('Warning: You are using a local/preview URL. These codes will NOT work when scanned by others.');
+    } else if (clean === getCleanUrl(DEPLOYED_URL)) {
+      setWarning(null); // Perfect match
     } else {
-      setWarning(null);
+       // Just a general check
+       setWarning(null);
     }
   }, [baseUrl]);
 
@@ -124,15 +132,25 @@ const QrGenerator: React.FC = () => {
           {/* Full Width URL Input */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-              <LinkIcon className="w-4 h-4" /> App Website URL
+              <LinkIcon className="w-4 h-4" /> Destination URL (Must be public)
             </label>
-            <input 
-              type="url" 
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono"
-              placeholder="https://your-app.vercel.app"
-            />
+            <div className="flex gap-2">
+                <input 
+                type="url" 
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                placeholder="https://your-site.github.io/"
+                />
+                <button 
+                    onClick={handleUseProductionUrl}
+                    title="Reset to Production URL"
+                    className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors whitespace-nowrap text-sm font-medium px-4"
+                >
+                    <Globe className="w-4 h-4 inline mr-2" />
+                    Use GitHub Link
+                </button>
+            </div>
             {warning && (
                <div className="mt-2 text-xs text-orange-700 bg-orange-50 p-2 rounded flex items-start gap-2 border border-orange-100">
                  <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -140,7 +158,7 @@ const QrGenerator: React.FC = () => {
                </div>
             )}
             <div className="mt-2 text-xs text-gray-400 flex justify-between items-center">
-               <span>Preview: {getCleanUrl(baseUrl)}?id={prefix}{pad(startNum, 3)}</span>
+               <span className="truncate max-w-[300px]">Preview: {getCleanUrl(baseUrl)}?id={prefix}{pad(startNum, 3)}</span>
                {tags.length > 0 && (
                    <a href={tags[0].url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
                        Test Link <ExternalLink className="w-3 h-3"/>
