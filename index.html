@@ -54,14 +54,31 @@
         background: #fee2e2;
         border: 1px solid #ef4444;
         color: #b91c1c;
-        padding: 16px;
-        border-radius: 8px;
-        max-width: 90%;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
         margin-top: 20px;
-        font-family: monospace;
-        font-size: 12px;
+        font-family: sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
         text-align: left;
         display: none; /* Hidden by default */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .error-title {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      code {
+        background: rgba(255,255,255,0.5);
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: bold;
       }
       @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -115,27 +132,46 @@
       </div>
     </div>
 
-    <!-- Error Handler: Captures startup errors (like 404s or SyntaxErrors) -->
+    <!-- Self-Diagnosis Script: Detects if the app fails to start -->
     <script>
+      // 1. Catch immediate script errors (SyntaxError, etc.)
       window.addEventListener('error', function(e) {
+        showError('Script Error', e.message);
+      });
+
+      // 2. Timeout check: If React hasn't replaced the #root content after 3 seconds, assume failure
+      setTimeout(function() {
+        const root = document.getElementById('root');
+        // If the spinner is still there, React didn't load
+        if (root && root.querySelector('#spinner')) {
+          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const msg = isLocal 
+            ? 'Ensure the dev server is running (npm run dev).'
+            : 'It looks like you deployed the <strong>source code</strong> instead of the <strong>built app</strong>.';
+          
+          showError('App Failed to Start', msg + '<br/><br/><strong>Fix:</strong> Run <code>npm run build</code> and deploy the <code>dist</code> folder.');
+        }
+      }, 3000);
+
+      function showError(title, message) {
         const spinner = document.getElementById('spinner');
         const loadingText = document.getElementById('loading-text');
         const errorBox = document.getElementById('error-display');
         
         if (spinner) spinner.style.display = 'none';
-        if (loadingText) loadingText.textContent = 'App Failed to Load';
+        if (loadingText) loadingText.style.display = 'none';
+        
         if (errorBox) {
           errorBox.style.display = 'block';
-          errorBox.innerHTML = '<strong>Error:</strong> ' + e.message + '<br/><br/>' +
-            (e.message.includes('<') || e.message.includes('SyntaxError') 
-              ? '<em>Hint: You might be serving source code (.tsx) directly. You must run "npm run build" and deploy the "dist" folder to GitHub Pages.</em>' 
-              : '<em>Hint: Check console for details.</em>');
+          errorBox.innerHTML = `
+            <div class="error-title">⚠️ ${title}</div>
+            <div>${message}</div>
+          `;
         }
-      });
+      }
     </script>
 
-    <!-- Entry Point for Vite/Build Tools -->
-    <!-- NOTE: Using ./ makes it work in subdirectories like /lost-and-found/ -->
+    <!-- Entry Point -->
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>
