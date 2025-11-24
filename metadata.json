@@ -1,0 +1,5 @@
+{
+  "name": "Scan To Return",
+  "description": "A serverless Lost & Found system using Google Sheets and React.",
+  "requestFramePermissions": []
+}
