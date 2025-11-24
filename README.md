@@ -23,21 +23,44 @@
 1. Open `constants.ts` in the source code.
 2. Replace `GOOGLE_SCRIPT_URL` with the Web App URL you just copied.
 
-## 3. Testing
-1. Run the React app (`npm start` or similar).
-2. Visit the URL with the ID you seeded: `http://localhost:3000/?id=TAG_001`
+## 3. Local Testing
+1. Run the React app (`npm start` or `npm run dev`).
+2. Visit the URL with the ID you seeded: `http://localhost:5173/?id=TAG_001` (Port may vary).
 3. Since status is "New", you should see the Activation Form.
-4. Fill it out and submit.
-5. The page should reload. Now the status is "Active", so you should see the "Owner Found" screen with the WhatsApp button.
-6. Check your Google Sheet to see the data populated.
 
-## 4. Hosting (GitHub Pages)
-1. **IMPORTANT**: Ensure `vite.config.ts` has the correct `base` path set to your repository name (e.g., `/lost-and-found/`).
-2. Build the React app (`npm run build`).
-3. Deploy the `dist` folder to GitHub Pages.
+## 4. Hosting on GitHub Pages (CRITICAL)
+**You cannot just upload the source files. You must build the app.**
 
-### Troubleshooting: Blank Screen
-If you see a blank screen on your phone:
-1. **Check URL**: Ensure you are visiting `https://username.github.io/lost-and-found/`.
-2. **Check Base Path**: Open `vite.config.ts` and verify `base: '/lost-and-found/'` matches your repo name.
-3. **Rebuild**: You must run `npm run build` and push the new artifacts after changing the config.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Check Config**: 
+   Ensure `vite.config.ts` has `base: '/lost-and-found/'` (matches your repo name).
+3. **Build**:
+   ```bash
+   npm run build
+   ```
+   *This creates a `dist` folder.*
+4. **Deploy**:
+   There are two ways to deploy:
+   
+   **Method A (Manual - Easiest for beginners)**:
+   - Install the `gh-pages` tool: `npm install gh-pages --save-dev`
+   - Add this to your `package.json` under "scripts":
+     ```json
+     "deploy": "gh-pages -d dist"
+     ```
+   - Run: `npm run build && npm run deploy`
+
+   **Method B (GitHub Actions)**:
+   - Push your code to GitHub.
+   - Go to Settings > Pages.
+   - Source: **GitHub Actions**.
+   - Select "Static HTML" or "Vite" workflow if available.
+
+### Troubleshooting: Blank Screen or Spinner Stuck
+If you see a spinner that never stops:
+1. **Did you build?** Browsers cannot run `.tsx` files. You must deploy the `dist` folder, not the `src` folder.
+2. **Check URL**: Ensure you are visiting `https://username.github.io/lost-and-found/`.
+3. **Check Base Path**: Open `vite.config.ts` and verify `base: '/lost-and-found/'` matches your repo name.

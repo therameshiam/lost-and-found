@@ -38,6 +38,8 @@
         height: 100vh;
         color: #6b7280;
         font-family: 'Inter', sans-serif;
+        padding: 20px;
+        text-align: center;
       }
       .loading-spinner {
         border: 4px solid #f3f3f3;
@@ -47,6 +49,19 @@
         height: 40px;
         animation: spin 1s linear infinite;
         margin-bottom: 16px;
+      }
+      .error-box {
+        background: #fee2e2;
+        border: 1px solid #ef4444;
+        color: #b91c1c;
+        padding: 16px;
+        border-radius: 8px;
+        max-width: 90%;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 12px;
+        text-align: left;
+        display: none; /* Hidden by default */
       }
       @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -94,11 +109,33 @@
     <div id="root">
       <!-- Fallback UI shown while React loads -->
       <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Loading Scan To Return...</p>
+        <div class="loading-spinner" id="spinner"></div>
+        <p id="loading-text">Loading Scan To Return...</p>
+        <div id="error-display" class="error-box"></div>
       </div>
     </div>
+
+    <!-- Error Handler: Captures startup errors (like 404s or SyntaxErrors) -->
+    <script>
+      window.addEventListener('error', function(e) {
+        const spinner = document.getElementById('spinner');
+        const loadingText = document.getElementById('loading-text');
+        const errorBox = document.getElementById('error-display');
+        
+        if (spinner) spinner.style.display = 'none';
+        if (loadingText) loadingText.textContent = 'App Failed to Load';
+        if (errorBox) {
+          errorBox.style.display = 'block';
+          errorBox.innerHTML = '<strong>Error:</strong> ' + e.message + '<br/><br/>' +
+            (e.message.includes('<') || e.message.includes('SyntaxError') 
+              ? '<em>Hint: You might be serving source code (.tsx) directly. You must run "npm run build" and deploy the "dist" folder to GitHub Pages.</em>' 
+              : '<em>Hint: Check console for details.</em>');
+        }
+      });
+    </script>
+
     <!-- Entry Point for Vite/Build Tools -->
-    <script type="module" src="/index.tsx"></script>
+    <!-- NOTE: Using ./ makes it work in subdirectories like /lost-and-found/ -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
